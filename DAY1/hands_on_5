@@ -1,0 +1,192 @@
+"""
+DAY 1 - FACTORY MONITORING SYSTEM
+23IF02 System Automation
+
+Monitor 5 machines and identify which needs immediate attention.
+
+Run:
+    python factory_monitor.py
+"""
+
+import random
+import time
+from datetime import datetime
+
+LOG_FILE = "day1_log.txt"
+
+# Five factory machines
+MACHINES = [
+    "Machine 1",
+    "Machine 2",
+    "Machine 3",
+    "Machine 4",
+    "Machine 5",
+]
+
+
+# STEP 1: Generate sensor data for one machine
+def generate_sensor_data():
+    return {
+        "temperature": round(random.uniform(50, 100), 1),  # Celsius
+        "pressure": round(random.uniform(1, 100), 1),      # Pressure units
+        "vibration": round(random.uniform(0, 10), 2),     # mm/s
+        "current": round(random.uniform(5, 30), 1),       # Amps
+    }
+
+
+# STEP 2: Define automation rules
+# Lower priority number means higher priority.
+RULES = [
+    {
+        "name": "CRITICAL_TEMPERATURE",
+        "priority": 1,
+        "condition": lambda r: r["temperature"] > 90,
+        "action": "EMERGENCY_STOP",
+    },
+    {
+        "name": "HIGH_VIBRATION",
+        "priority": 2,
+        "condition": lambda r: r["vibration"] > 7,
+        "action": "STOP_MACHINE",
+    },
+    {
+        "name": "HIGH_CURRENT",
+        "priority": 3,
+        "condition": lambda r: r["current"] > 25,
+        "action": "REDUCE_LOAD",
+    },
+    {
+        "name": "LOW_PRESSURE",
+        "priority": 4,
+        "condition": lambda r: r["pressure"] < 20,
+        "action": "CHECK_PRESSURE",
+    },
+    {
+        "name": "HIGH_PRESSURE",
+        "priority": 5,
+        "condition": lambda r: r["pressure"] > 80,
+        "action": "CHECK_PRESSURE",
+    },
+]
+
+
+# STEP 3: Evaluate rules
+def evaluate_rules(reading, rules):
+    for rule in sorted(rules, key=lambda item: item["priority"]):
+        if rule["condition"](reading):
+            return rule["name"], rule["action"]
+
+    return "NORMAL", "CONTINUE_NORMAL"
+
+
+# STEP 4: Describe the action
+def take_action(action):
+    actions = {
+        "EMERGENCY_STOP": "CRITICAL: Immediate inspection required",
+        "STOP_MACHINE": "WARNING: Stop and inspect machine",
+        "REDUCE_LOAD": "WARNING: Reduce electrical load",
+        "CHECK_PRESSURE": "WARNING: Inspect pressure system",
+        "CONTINUE_NORMAL": "Machine operating normally",
+    }
+    return actions.get(action, "Unknown action")
+
+
+# STEP 5: Log each machine's result
+def log_decision(machine, reading, rule_name, action):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    with open(LOG_FILE, "a", encoding="utf-8") as file:
+        file.write(
+            f"{timestamp} | {machine} | "
+            f"Reading={reading} | Rule={rule_name} | "
+            f"Action={action}\n"
+        )
+
+
+# STEP 6: Assign severity for prioritization
+def get_severity(rule_name):
+    severity = {
+        "CRITICAL_TEMPERATURE": 5,
+        "HIGH_VIBRATION": 4,
+        "HIGH_CURRENT": 3,
+        "LOW_PRESSURE": 2,
+        "HIGH_PRESSURE": 2,
+        "NORMAL": 0,
+    }
+    return severity.get(rule_name, 0)
+
+
+# STEP 7: Monitor all five machines
+def main():
+    results = []
+
+    print("=" * 75)
+    print("             FACTORY MACHINE MONITORING SYSTEM")
+    print("=" * 75)
+
+    for machine in MACHINES:
+        reading = generate_sensor_data()
+        rule_name, action = evaluate_rules(reading, RULES)
+        outcome = take_action(action)
+
+        result = {
+            "machine": machine,
+            "reading": reading,
+            "rule": rule_name,
+            "action": action,
+            "outcome": outcome,
+            "severity": get_severity(rule_name),
+        }
+        results.append(result)
+
+        print(f"\n{machine}")
+        print(f"  Sensors : {reading}")
+        print(f"  Rule    : {rule_name}")
+        print(f"  Action  : {outcome}")
+
+        log_decision(machine, reading, rule_name, action)
+
+        time.sleep(0.1)
+
+    # STEP 8: Identify the machine needing immediate attention
+    results.sort(key=lambda item: item["severity"], reverse=True)
+
+    print("\n" + "=" * 75)
+    print("                 ATTENTION PRIORITY REPORT")
+    print("=" * 75)
+
+    urgent = [item for item in results if item["severity"] >= 4]
+
+    if urgent:
+        print("\nMachines requiring urgent attention:")
+        for item in urgent:
+            print(
+                f"  {item['machine']} | "
+                f"Rule: {item['rule']} | "
+                f"Severity: {item['severity']}/5"
+            )
+    else:
+        warnings = [item for item in results if item["severity"] > 0]
+
+        if warnings:
+            highest = warnings[0]
+            print(
+                f"\nHighest-priority machine: {highest['machine']}"
+            )
+            print(f"Reason: {highest['rule']}")
+            print(f"Action: {highest['outcome']}")
+        else:
+            print("\nAll five machines are within configured limits.")
+
+    print("\nFull priority ranking:")
+    for rank, item in enumerate(results, start=1):
+        print(
+            f"{rank}. {item['machine']} - "
+            f"{item['rule']} (severity {item['severity']}/5)"
+        )
+
+    print(f"\nLog saved to {LOG_FILE}")
+
+
+if __name__ == "__main__":
+    main()

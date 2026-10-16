@@ -1,0 +1,5 @@
+2026-10-10 16:40:39 | Machine 1 | Reading={'temperature': 58.7, 'pressure': 48.8, 'vibration': 0.72, 'current': 14.6} | Rule=NORMAL | Action=CONTINUE_NORMAL
+2026-10-10 16:40:39 | Machine 2 | Reading={'temperature': 76.6, 'pressure': 56.5, 'vibration': 3.71, 'current': 5.1} | Rule=NORMAL | Action=CONTINUE_NORMAL
+2026-10-10 16:40:39 | Machine 3 | Reading={'temperature': 63.6, 'pressure': 16.9, 'vibration': 0.71, 'current': 19.3} | Rule=LOW_PRESSURE | Action=CHECK_PRESSURE
+2026-10-10 16:40:39 | Machine 4 | Reading={'temperature': 89.1, 'pressure': 21.2, 'vibration': 1.62, 'current': 12.0} | Rule=NORMAL | Action=CONTINUE_NORMAL
+2026-10-10 16:40:39 | Machine 5 | Reading={'temperature': 54.7, 'pressure': 14.8, 'vibration': 9.24, 'current': 29.3} | Rule=HIGH_VIBRATION | Action=STOP_MACHINE
